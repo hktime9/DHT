@@ -242,6 +242,7 @@ def checkTopology():
 	global pred
 	while(True):
 		giveList(succ)
+		topology.sort()
 		checkFlag= False
 		adjacentStatus= checkAdjacentNodes()
 		if(adjacentStatus):
@@ -316,12 +317,12 @@ def giveHash(filename):
 	return value
 
 def findNodeForHash(hashValue):
-	portList= sorted(topology)
-	for i in range(0,len(portList)):
-		if(portList[i]>hashValue):
-			return portList[i]
-	if(hashValue>portList[len(portList)-1]):
-		return portList[len(portList)-1]
+	global topology
+	for i in range(0,len(topology)):
+		if(topology[i]>hashValue):
+			return topology[i]
+	if(hashValue>topology[len(topology)-1]):
+		return topology[len(topology)-1]
 
 def sendFile(filename, hashValue, port):
 	global filesList
@@ -424,19 +425,25 @@ def requestFile(port, filename):
 
 def showOptions():
 	while(True):
+		os.system("CLS")
 		print("What do you want to do?")
 		print("1) Upload a file")
 		print("2) Download a file")
 		print("3) Leave the Chord")
+		print("4) View the files that you have")
+		print("5) View the nodes in your network")
 		try:
 			choice= int(input("Enter option number: "))
+			os.system("CLS")
 			pass
 		except EOFError:
 			os._exit(1)
 		if(choice==1):
 			os.system("DIR")
 			try:
-				filename= str(input("Out of these files, which one do you want to upload? "))
+				filename= str(input("Out of these files, which one do you want to upload? Enter q to go back: "))
+				if(filename=="q"):
+					continue
 				pass
 			except EOFError:
 				os._exit(1)
@@ -453,13 +460,17 @@ def showOptions():
 			indexOfFile= 0
 			while(True):
 				try:
-					indexOfFile= int(input("Enter the list index of the file you want to download: "))
+					indexOfFile= int(input("Enter the list index of the file you want to download. Enter q to go back: "))
+					if(indexOfFile=="q"):
+						break
 					pass
 				except EOFError:
 					os._exit(1)
 				if((0<=indexOfFile) and (indexOfFile<=(len(filesOnNetwork)-1))):
 					break
 				print("Invalid index!")
+			if(indexOfFile=="q"):
+				continue
 			fileToDownload= filesOnNetwork[indexOfFile]
 			print("Will download this {}".format(fileToDownload))
 			fileInfo= fileToDownload.split(":")
@@ -477,8 +488,13 @@ def showOptions():
 					fileName= entry[1]
 					sendFile(fileName,fileHash,succ)
 			os._exit(1)
+		elif(choice==4):
+			print(filesList)
+		elif(choice==5):
+			print(topology)
 		else:
 			print("Invalid choice")
+		time.sleep(3)
 
 def checkMyFiles():
 	global filesList
@@ -493,12 +509,13 @@ def checkMyFiles():
 				fileName= entry[1]
 				correctNode= findNodeForHash(fileHash)
 				if(correctNode!=identity):
-					print("someone New came in and now Transferring the files that belongs to them")
-					sendFile(fileName,fileHash,correctNode)
-					delList.append(originalEntry)
+					if(isNodeUp(correctNode)):
+						print("{} came in and now Transferring the files that belongs to them".format(correctNode))
+						sendFile(fileName,fileHash,correctNode)
+						delList.append(originalEntry)
 			for i in range(0,len(delList)):
 				filesList.remove(delList[i])
-		time.sleep(1.5)
+		time.sleep(3)
 				
 try:
 	identity= int(input("Enter your port: "))
