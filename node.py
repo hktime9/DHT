@@ -460,9 +460,11 @@ def showOptions():
 			indexOfFile= 0
 			while(True):
 				try:
-					indexOfFile= int(input("Enter the list index of the file you want to download. Enter q to go back: "))
+					indexOfFile= input("Enter the list index of the file you want to download. Enter q to go back: ")
 					if(indexOfFile=="q"):
 						break
+					else:
+						indexOfFile= int(indexOfFile)
 					pass
 				except EOFError:
 					os._exit(1)
